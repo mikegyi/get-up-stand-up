@@ -17,6 +17,21 @@ cd /Users/mikegyi/LocalDev/stand-up-app
 swift run
 ```
 
+## Build a proper app bundle
+
+```bash
+cd /Users/mikegyi/LocalDev/stand-up-app
+./scripts/install-app.sh
+open "$HOME/Applications/Stand Up.app"
+```
+
+## Launch at login
+
+```bash
+cd /Users/mikegyi/LocalDev/stand-up-app
+./scripts/install-launch-agent.sh
+```
+
 On first run, macOS may ask for:
 
 - Notifications permission, so the reminder can appear
@@ -26,4 +41,4 @@ If you do not see the timer reacting to activity, open:
 
 `System Settings -> Privacy & Security`
 
-Then allow the terminal or built app to monitor input.
+Then allow the built app to monitor input.

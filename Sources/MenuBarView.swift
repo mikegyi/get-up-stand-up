@@ -9,6 +9,10 @@ struct MenuBarView: View {
             Text(reminderEngine.sessionState.rawValue)
                 .font(.headline)
 
+            Text(reminderEngine.inputAccessState.rawValue)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
             VStack(alignment: .leading, spacing: 6) {
                 Text(reminderEngine.formattedElapsed())
                     .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -26,6 +30,12 @@ struct MenuBarView: View {
             }
 
             Divider()
+
+            if reminderEngine.inputAccessState == .needsApproval {
+                Button("Open Input Monitoring Prompt") {
+                    reminderEngine.requestInputAccess()
+                }
+            }
 
             Button(reminderEngine.isPaused ? "Resume tracking" : "Pause tracking") {
                 if reminderEngine.isPaused {

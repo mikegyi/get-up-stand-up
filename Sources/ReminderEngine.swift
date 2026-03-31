@@ -4,10 +4,12 @@ import Foundation
 final class ReminderEngine: ObservableObject {
     @Published private(set) var elapsedSeconds: TimeInterval = 0
     @Published private(set) var sessionState: SessionState = .waitingForActivity
+    @Published private(set) var inputAccessState: InputAccessState = .needsApproval
     @Published var isPaused = false
 
     private let settings: AppSettings
     private let activityMonitor = ActivityMonitor()
+    private let inputAccessMonitor = InputAccessMonitor()
     private let notifier = ReminderNotifier()
     private let speaker = ReminderSpeaker()
 
@@ -25,6 +27,7 @@ final class ReminderEngine: ObservableObject {
         }
 
         hasStarted = true
+        refreshInputAccess()
         notifier.requestAuthorization()
 
         activityMonitor.start { [weak self] in
@@ -40,6 +43,15 @@ final class ReminderEngine: ObservableObject {
         }
 
         tick()
+    }
+
+    func refreshInputAccess() {
+        inputAccessState = inputAccessMonitor.currentState()
+    }
+
+    func requestInputAccess() {
+        inputAccessMonitor.requestAccess()
+        refreshInputAccess()
     }
 
     func pause() {

@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct StandUpApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @StateObject private var settings = AppSettings()
+    @StateObject private var settings: AppSettings
     @StateObject private var reminderEngine: ReminderEngine
 
     init() {

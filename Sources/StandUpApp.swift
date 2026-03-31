@@ -19,7 +19,8 @@ struct StandUpApp: App {
                     reminderEngine.start()
                 }
         } label: {
-            MenuBarLabelView(reminderEngine: reminderEngine)
+            Text(reminderEngine.menuBarLabelText())
+                .monospacedDigit()
         }
         .menuBarExtraStyle(.window)
     }

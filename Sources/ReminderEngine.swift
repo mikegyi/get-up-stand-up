@@ -11,7 +11,6 @@ final class ReminderEngine: ObservableObject {
     private let activityMonitor = ActivityMonitor()
     private let inputAccessMonitor = InputAccessMonitor()
     private let notifier = ReminderNotifier()
-    private let speaker = ReminderSpeaker()
 
     private var timer: Timer?
     private var hasStarted = false
@@ -72,10 +71,22 @@ final class ReminderEngine: ObservableObject {
     }
 
     func formattedElapsed() -> String {
-        let totalSeconds = Int(elapsedSeconds)
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        format(minutesAndSecondsFor: elapsedSeconds)
+    }
+
+    func formattedRemaining() -> String {
+        format(minutesAndSecondsFor: remainingSeconds())
+    }
+
+    func menuBarLabel() -> String {
+        switch sessionState {
+        case .timeToStand:
+            return "🎶 Up!"
+        case .paused:
+            return "⏸ \(formattedRemaining())"
+        default:
+            return "🎶 \(formattedRemaining())"
+        }
     }
 
     func reminderProgress() -> Double {
@@ -124,13 +135,24 @@ final class ReminderEngine: ObservableObject {
         }
 
         notifier.sendStandUpReminder()
-        speaker.speakReminder()
+    }
+
+    private func remainingSeconds() -> TimeInterval {
+        let targetSeconds = settings.workIntervalMinutes * 60
+        return max(targetSeconds - elapsedSeconds, 0)
+    }
+
+    private func format(minutesAndSecondsFor totalTime: TimeInterval) -> String {
+        let totalSeconds = max(Int(totalTime), 0)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
 enum SessionState: String {
-    case waitingForActivity = "Waiting for activity"
-    case tracking = "Tracking your coding streak"
+    case waitingForActivity = "Waiting for the groove"
+    case tracking = "Coding streak in progress"
     case paused = "Paused"
-    case timeToStand = "Time to stand up"
+    case timeToStand = "Get up stand up 🎶"
 }

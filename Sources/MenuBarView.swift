@@ -6,33 +6,36 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(reminderEngine.sessionState.rawValue)
-                .font(.headline)
-
-            Text(reminderEngine.inputAccessState.rawValue)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            header
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(reminderEngine.formattedElapsed())
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                Text(reminderEngine.formattedRemaining())
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(StandUpTheme.gradient)
+
+                Text("until your next stretch break")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 ProgressView(value: reminderEngine.reminderProgress())
                     .progressViewStyle(.linear)
+                    .tint(StandUpTheme.green)
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Work interval: \(Int(settings.workIntervalMinutes)) min")
                 Slider(value: $settings.workIntervalMinutes, in: 15...90, step: 5)
+                    .tint(StandUpTheme.gold)
 
                 Text("Idle reset: \(Int(settings.idleResetMinutes)) min")
                 Slider(value: $settings.idleResetMinutes, in: 1...10, step: 1)
+                    .tint(StandUpTheme.red)
             }
 
             Divider()
 
             if reminderEngine.inputAccessState == .needsApproval {
-                Button("Open Input Monitoring Prompt") {
+                Button("Enable keyboard tracking in Accessibility") {
                     reminderEngine.requestInputAccess()
                 }
             }
@@ -54,6 +57,34 @@ struct MenuBarView: View {
             }
         }
         .padding(16)
-        .frame(width: 280)
+        .frame(width: 320)
+        .background(StandUpTheme.background)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Get Up Stand Up 🎶")
+                .font(.title3.weight(.bold))
+                .foregroundStyle(StandUpTheme.gradient)
+
+            Text(reminderEngine.sessionState.rawValue)
+                .font(.headline)
+
+            Text(reminderEngine.inputAccessState.rawValue)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 6) {
+                themeStripe(StandUpTheme.green)
+                themeStripe(StandUpTheme.gold)
+                themeStripe(StandUpTheme.red)
+            }
+        }
+    }
+
+    private func themeStripe(_ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 999)
+            .fill(color)
+            .frame(height: 6)
     }
 }

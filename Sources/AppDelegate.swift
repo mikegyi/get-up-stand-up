@@ -1,8 +1,10 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let launchInstant = Date()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        guard !isDuplicateInstance() else {
+        guard !hasOlderMatchingPeer() else {
             NSApp.terminate(nil)
             return
         }
@@ -10,11 +12,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
     }
 
-    private func isDuplicateInstance() -> Bool {
-        guard let bundleIdentifier = Bundle.main.bundleIdentifier else {
-            return false
+    private func hasOlderMatchingPeer() -> Bool {
+        let currentProcessIdentifier = ProcessInfo.processInfo.processIdentifier
+        let matchingApplications = NSWorkspace.shared.runningApplications.filter { application in
+            guard application.processIdentifier != currentProcessIdentifier else {
+                return false
+            }
+
+            if let bundleIdentifier = Bundle.main.bundleIdentifier,
+               application.bundleIdentifier == bundleIdentifier {
+                return true
+            }
+
+            guard let executablePath = Bundle.main.executableURL?.path else {
+                return false
+            }
+
+            return application.executableURL?.path == executablePath
         }
 
-        return NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).count > 1
+        return matchingApplications.contains { application in
+            if let launchDate = application.launchDate {
+                if launchDate < launchInstant {
+                    return true
+                }
+
+                if launchDate == launchInstant {
+                    return application.processIdentifier < currentProcessIdentifier
+                }
+            }
+
+            return application.processIdentifier < currentProcessIdentifier
+        }
     }
 }

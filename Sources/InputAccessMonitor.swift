@@ -1,16 +1,17 @@
-import ApplicationServices
+@preconcurrency import ApplicationServices
 
 enum InputAccessState: String {
     case granted = "Activity tracking is enabled"
-    case needsApproval = "Allow Input Monitoring for keyboard tracking"
+    case needsApproval = "Mouse tracking works now. Enable Accessibility for keyboard tracking too."
 }
 
 struct InputAccessMonitor {
     func currentState() -> InputAccessState {
-        CGPreflightListenEventAccess() ? .granted : .needsApproval
+        AXIsProcessTrusted() ? .granted : .needsApproval
     }
 
     func requestAccess() {
-        _ = CGRequestListenEventAccess()
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
     }
 }

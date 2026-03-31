@@ -13,11 +13,13 @@ struct StandUpApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Stand Up", systemImage: "figure.walk.motion") {
+        MenuBarExtra {
             MenuBarView(reminderEngine: reminderEngine, settings: settings)
                 .onAppear {
                     reminderEngine.start()
                 }
+        } label: {
+            Text(reminderEngine.menuBarLabel())
         }
         .menuBarExtraStyle(.window)
     }

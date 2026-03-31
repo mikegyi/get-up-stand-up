@@ -1,7 +1,11 @@
 import AppKit
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let launchInstant = Date()
+    private let settings = AppSettings()
+    private lazy var reminderEngine = ReminderEngine(settings: settings)
+    private var statusBarController: StatusBarController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !hasOlderMatchingPeer() else {
@@ -10,6 +14,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSApp.setActivationPolicy(.accessory)
+        reminderEngine.start()
+        statusBarController = StatusBarController(settings: settings, reminderEngine: reminderEngine)
     }
 
     private func hasOlderMatchingPeer() -> Bool {

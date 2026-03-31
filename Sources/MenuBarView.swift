@@ -9,11 +9,11 @@ struct MenuBarView: View {
             header
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(reminderEngine.formattedRemaining())
+                Text(reminderEngine.formattedElapsed())
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundStyle(StandUpTheme.gradient)
 
-                Text("until your next stretch break")
+                Text("your current coding streak")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 

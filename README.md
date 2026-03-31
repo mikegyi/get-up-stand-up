@@ -7,7 +7,7 @@ Minimal macOS menu bar app that watches for keyboard and mouse activity and remi
 - Starts tracking when you type, click, scroll, or move the mouse
 - Resets the work streak if you go idle for a few minutes
 - Sends a macOS notification
-- Shows the live countdown directly in the menu bar
+- Shows the live count-up timer directly in the menu bar
 - Lives in the menu bar instead of the Dock
 
 ## Run it

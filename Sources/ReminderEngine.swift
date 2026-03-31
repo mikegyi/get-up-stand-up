@@ -74,18 +74,14 @@ final class ReminderEngine: ObservableObject {
         format(minutesAndSecondsFor: elapsedSeconds)
     }
 
-    func formattedRemaining() -> String {
-        format(minutesAndSecondsFor: remainingSeconds())
-    }
-
     func menuBarLabel() -> String {
         switch sessionState {
-        case .timeToStand:
-            return "🎶 Up!"
+        case .waitingForActivity:
+            return "🎶 00:00"
         case .paused:
-            return "⏸ \(formattedRemaining())"
+            return "⏸ \(formattedElapsed())"
         default:
-            return "🎶 \(formattedRemaining())"
+            return "🎶 \(formattedElapsed())"
         }
     }
 
@@ -135,11 +131,6 @@ final class ReminderEngine: ObservableObject {
         }
 
         notifier.sendStandUpReminder()
-    }
-
-    private func remainingSeconds() -> TimeInterval {
-        let targetSeconds = settings.workIntervalMinutes * 60
-        return max(targetSeconds - elapsedSeconds, 0)
     }
 
     private func format(minutesAndSecondsFor totalTime: TimeInterval) -> String {

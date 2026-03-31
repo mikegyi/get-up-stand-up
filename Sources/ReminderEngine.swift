@@ -74,14 +74,16 @@ final class ReminderEngine: ObservableObject {
         format(minutesAndSecondsFor: elapsedSeconds)
     }
 
-    func menuBarLabel() -> String {
+    func menuBarTimerText() -> String {
         switch sessionState {
         case .waitingForActivity:
-            return "🎶 00:00"
+            return "00:00"
         case .paused:
             return "⏸ \(formattedElapsed())"
-        default:
-            return "🎶 \(formattedElapsed())"
+        case .tracking:
+            return formattedElapsed()
+        case .timeToStand:
+            return "UP \(formattedElapsed())"
         }
     }
 

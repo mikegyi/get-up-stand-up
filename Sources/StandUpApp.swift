@@ -19,7 +19,7 @@ struct StandUpApp: App {
                     reminderEngine.start()
                 }
         } label: {
-            Text(reminderEngine.menuBarLabel())
+            MenuBarLabelView(reminderEngine: reminderEngine)
         }
         .menuBarExtraStyle(.window)
     }

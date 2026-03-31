@@ -8,16 +8,16 @@ struct StandUpApp: App {
 
     init() {
         let settings = AppSettings()
+        let reminderEngine = ReminderEngine(settings: settings)
+        reminderEngine.start()
+
         _settings = StateObject(wrappedValue: settings)
-        _reminderEngine = StateObject(wrappedValue: ReminderEngine(settings: settings))
+        _reminderEngine = StateObject(wrappedValue: reminderEngine)
     }
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(reminderEngine: reminderEngine, settings: settings)
-                .onAppear {
-                    reminderEngine.start()
-                }
         } label: {
             Text(reminderEngine.menuBarLabelText())
                 .monospacedDigit()

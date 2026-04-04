@@ -55,6 +55,21 @@ struct MenuBarView: View {
             Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
+
+            Divider()
+
+            HStack(spacing: 4) {
+                Text("Made by Mike G")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text("·")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Link("@mikegyi", destination: URL(string: "https://x.com/mikegyi")!)
+                    .font(.caption)
+            }
         }
         .padding(16)
         .frame(width: 320)

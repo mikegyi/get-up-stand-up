@@ -22,6 +22,11 @@ struct MenuBarView: View {
                     .tint(StandUpTheme.green)
             }
 
+            WorkHeatmapView(
+                snapshot: reminderEngine.workHistory,
+                formatDuration: reminderEngine.formattedWorkDuration
+            )
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Work interval: \(Int(settings.workIntervalMinutes)) min")
                 Slider(value: $settings.workIntervalMinutes, in: 15...90, step: 5)
@@ -72,7 +77,7 @@ struct MenuBarView: View {
             }
         }
         .padding(16)
-        .frame(width: 320)
+        .frame(width: 340)
         .background(StandUpTheme.background)
     }
 

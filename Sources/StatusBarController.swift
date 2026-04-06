@@ -14,7 +14,7 @@ final class StatusBarController: NSObject {
         super.init()
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 320, height: 360)
+        popover.contentSize = NSSize(width: 340, height: 470)
         popover.contentViewController = NSHostingController(
             rootView: MenuBarView(reminderEngine: reminderEngine, settings: settings)
         )

@@ -6,7 +6,7 @@ Made by [Mike G](https://x.com/mikegyi).
 
 <p align="center">
   <img
-    src="assets/get-up-stand-up-product.png"
+    src="assets/get-up-stand-up-product-wide.png"
     alt="Get Up Stand Up product screenshot"
     width="420"
   />

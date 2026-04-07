@@ -8,7 +8,6 @@ Made by [Mike G](https://x.com/mikegyi).
   <img
     src="assets/get-up-stand-up-product-wide.png"
     alt="Get Up Stand Up product screenshot"
-    width="420"
   />
 </p>
 

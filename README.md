@@ -4,9 +4,7 @@ Minimal macOS menu bar app that tracks your coding streak and nudges you to stan
 
 Made by [Mike G](https://x.com/mikegyi).
 
-<p align="center">
-  <strong>What it looks like</strong>
-</p>
+## What it looks like
 
 <p align="center">
   <img

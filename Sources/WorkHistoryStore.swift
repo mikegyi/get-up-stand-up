@@ -17,6 +17,7 @@ struct WorkHistorySnapshot: Equatable {
     let weeks: [WorkWeek]
     let todaySeconds: TimeInterval
     let todayPatternSegments: [WorkPatternSegment]
+    let todayNowFraction: Double
     let currentStreakDays: Int
     let longestStreakDays: Int
     let bestDaySeconds: TimeInterval
@@ -26,6 +27,7 @@ struct WorkHistorySnapshot: Equatable {
         weeks: [],
         todaySeconds: 0,
         todayPatternSegments: [],
+        todayNowFraction: 0,
         currentStreakDays: 0,
         longestStreakDays: 0,
         bestDaySeconds: 0,
@@ -67,9 +69,7 @@ final class WorkHistoryStore {
             return snapshot(referenceDate: date)
         }
 
-        let dayKey = key(for: date)
-        activeSecondsByDay[dayKey, default: 0] += seconds
-        recordWorkPeriod(seconds: seconds, endingAt: date)
+        recordActiveInterval(seconds: seconds, endingAt: date)
         trimHistory(relativeTo: date)
         persist()
 
@@ -146,6 +146,7 @@ final class WorkHistoryStore {
             weeks: normalizedWeeks,
             todaySeconds: activeSeconds(on: endDay),
             todayPatternSegments: todayPatternSegments(on: endDay),
+            todayNowFraction: currentDayFraction(for: referenceDate),
             currentStreakDays: currentStreak(endingAt: endDay),
             longestStreakDays: longestStreak(across: rangeDates),
             bestDaySeconds: maxDaySeconds,
@@ -171,6 +172,13 @@ final class WorkHistoryStore {
 
     private func activeSeconds(on date: Date) -> TimeInterval {
         activeSecondsByDay[key(for: date)] ?? 0
+    }
+
+    private func currentDayFraction(for date: Date) -> Double {
+        let dayStart = calendar.startOfDay(for: date)
+        let daySeconds: TimeInterval = 86_400
+        let elapsed = max(min(date.timeIntervalSince(dayStart), daySeconds), 0)
+        return elapsed / daySeconds
     }
 
     private func currentStreak(endingAt endDay: Date) -> Int {
@@ -267,6 +275,35 @@ final class WorkHistoryStore {
         userDefaults.set(periodData, forKey: Keys.workPeriodsByDay)
     }
 
+    private func recordActiveInterval(seconds: TimeInterval, endingAt date: Date) {
+        let intervalEnd = date
+        let intervalStart = date.addingTimeInterval(-seconds)
+        var chunkStart = intervalStart
+
+        while chunkStart < intervalEnd {
+            let dayStart = calendar.startOfDay(for: chunkStart)
+            guard let nextDayStart = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
+                break
+            }
+
+            let chunkEnd = min(intervalEnd, nextDayStart)
+            let startSecond = max(chunkStart.timeIntervalSince(dayStart), 0)
+            let endSecond = max(chunkEnd.timeIntervalSince(dayStart), startSecond)
+
+            if endSecond > startSecond {
+                let chunkSeconds = endSecond - startSecond
+                let dayKey = key(for: chunkStart)
+                activeSecondsByDay[dayKey, default: 0] += chunkSeconds
+                recordWorkPeriod(
+                    dayKey: dayKey,
+                    period: StoredWorkPeriod(startSecond: startSecond, endSecond: endSecond)
+                )
+            }
+
+            chunkStart = chunkEnd
+        }
+    }
+
     private func recordWorkPeriod(seconds: TimeInterval, endingAt date: Date) {
         let dayStart = calendar.startOfDay(for: date)
         let endSecond = max(date.timeIntervalSince(dayStart), 0)
@@ -276,9 +313,15 @@ final class WorkHistoryStore {
             return
         }
 
-        let dayKey = key(for: date)
+        recordWorkPeriod(
+            dayKey: key(for: date),
+            period: StoredWorkPeriod(startSecond: startSecond, endSecond: endSecond)
+        )
+    }
+
+    private func recordWorkPeriod(dayKey: String, period: StoredWorkPeriod) {
         var periods = workPeriodsByDay[dayKey] ?? []
-        periods.append(StoredWorkPeriod(startSecond: startSecond, endSecond: endSecond))
+        periods.append(period)
         workPeriodsByDay[dayKey] = mergedPeriods(periods)
     }
 

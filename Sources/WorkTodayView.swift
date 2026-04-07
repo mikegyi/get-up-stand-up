@@ -18,7 +18,10 @@ struct WorkTodayView: View {
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(StandUpTheme.heatmapPeak)
 
-            WorkDayPatternLineView(segments: snapshot.todayPatternSegments)
+            WorkDayPatternLineView(
+                segments: snapshot.todayPatternSegments,
+                nowFraction: snapshot.todayNowFraction
+            )
                 .frame(height: 8)
             
             if snapshot.todaySeconds == 0 {

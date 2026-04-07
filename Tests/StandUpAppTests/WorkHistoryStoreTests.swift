@@ -4,8 +4,8 @@ import XCTest
 final class WorkHistoryStoreTests: XCTestCase {
     func testItAccumulatesDailyWorkAndCalculatesStreaks() {
         let (store, _) = makeStore()
-        let today = date(year: 2026, month: 4, day: 6)
-        let yesterday = date(year: 2026, month: 4, day: 5)
+        let today = date(year: 2026, month: 4, day: 6, hour: 12, minute: 0)
+        let yesterday = date(year: 2026, month: 4, day: 5, hour: 12, minute: 0)
 
         _ = store.recordActiveWork(seconds: 1_800, at: yesterday)
         let snapshot = store.recordActiveWork(seconds: 5_400, at: today)
@@ -34,11 +34,11 @@ final class WorkHistoryStoreTests: XCTestCase {
     func testCurrentStreakStopsAtTheFirstGap() {
         let (store, _) = makeStore()
 
-        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 3))
-        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 4))
-        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 6))
+        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 3, hour: 12, minute: 0))
+        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 4, hour: 12, minute: 0))
+        _ = store.recordActiveWork(seconds: 3_600, at: date(year: 2026, month: 4, day: 6, hour: 12, minute: 0))
 
-        let snapshot = store.snapshot(referenceDate: date(year: 2026, month: 4, day: 6))
+        let snapshot = store.snapshot(referenceDate: date(year: 2026, month: 4, day: 6, hour: 12, minute: 0))
 
         XCTAssertEqual(snapshot.currentStreakDays, 1)
         XCTAssertEqual(snapshot.longestStreakDays, 2)
@@ -54,6 +54,7 @@ final class WorkHistoryStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.todayPatternSegments.count, 1)
         XCTAssertEqual(snapshot.todayPatternSegments[0].startFraction, (9 * 3_600) / 86_400, accuracy: 0.0001)
         XCTAssertEqual(snapshot.todayPatternSegments[0].endFraction, ((9 * 3_600) + (20 * 60)) / 86_400, accuracy: 0.0001)
+        XCTAssertEqual(snapshot.todayNowFraction, ((9 * 3_600) + (20 * 60)) / 86_400, accuracy: 0.0001)
         XCTAssertEqual(snapshot.todaySeconds, 1_200, accuracy: 0.001)
         XCTAssertEqual(calendar.startOfDay(for: day), day)
     }
@@ -70,6 +71,31 @@ final class WorkHistoryStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.todayPatternSegments[0].endFraction, 180 / 86_400, accuracy: 0.0001)
     }
 
+    func testItSplitsWorkAcrossMidnight() {
+        let (store, _) = makeStore()
+
+        _ = store.recordActiveWork(
+            seconds: 2,
+            at: date(year: 2026, month: 4, day: 7, hour: 0, minute: 0, second: 1)
+        )
+
+        let previousDaySnapshot = store.snapshot(
+            referenceDate: date(year: 2026, month: 4, day: 6, hour: 23, minute: 59, second: 59)
+        )
+        let newDaySnapshot = store.snapshot(
+            referenceDate: date(year: 2026, month: 4, day: 7, hour: 0, minute: 0, second: 1)
+        )
+
+        XCTAssertEqual(previousDaySnapshot.todaySeconds, 1, accuracy: 0.001)
+        XCTAssertEqual(newDaySnapshot.todaySeconds, 1, accuracy: 0.001)
+        XCTAssertEqual(previousDaySnapshot.todayPatternSegments.count, 1)
+        XCTAssertEqual(newDaySnapshot.todayPatternSegments.count, 1)
+        XCTAssertEqual(previousDaySnapshot.todayPatternSegments[0].startFraction, 86_398 / 86_400, accuracy: 0.0001)
+        XCTAssertEqual(previousDaySnapshot.todayPatternSegments[0].endFraction, 1, accuracy: 0.0001)
+        XCTAssertEqual(newDaySnapshot.todayPatternSegments[0].startFraction, 0, accuracy: 0.0001)
+        XCTAssertEqual(newDaySnapshot.todayPatternSegments[0].endFraction, 1 / 86_400, accuracy: 0.0001)
+    }
+
     private func makeStore() -> (WorkHistoryStore, UserDefaults) {
         let suiteName = "WorkHistoryStoreTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -83,6 +109,17 @@ final class WorkHistoryStoreTests: XCTestCase {
 
     private func date(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
+    }
+
+    private func date(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Date {
+        calendar.date(from: DateComponents(
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute,
+            second: second
+        ))!
     }
 
     private var calendar: Calendar {

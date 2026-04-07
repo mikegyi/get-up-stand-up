@@ -2,12 +2,17 @@ import SwiftUI
 
 struct WorkDayPatternLineView: View {
     let segments: [WorkPatternSegment]
+    let nowFraction: Double
 
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(StandUpTheme.timelineTrack)
+                    .fill(StandUpTheme.timelineFuture)
+
+                Capsule()
+                    .fill(StandUpTheme.timelineBreak)
+                    .frame(width: max(geometry.size.width * nowFraction, 0))
 
                 ForEach(segments) { segment in
                     Capsule()
@@ -18,6 +23,11 @@ struct WorkDayPatternLineView: View {
                         )
                         .offset(x: segment.startFraction * geometry.size.width)
                 }
+
+                Capsule()
+                    .fill(StandUpTheme.timelineNow)
+                    .frame(width: 2, height: geometry.size.height + 2)
+                    .offset(x: max((geometry.size.width * nowFraction) - 1, 0))
             }
         }
     }

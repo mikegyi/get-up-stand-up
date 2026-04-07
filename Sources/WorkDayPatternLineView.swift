@@ -16,7 +16,7 @@ struct WorkDayPatternLineView: View {
 
                 ForEach(segments) { segment in
                     Capsule()
-                        .fill(StandUpTheme.heatmapPeak)
+                        .fill(StandUpTheme.brightGreen)
                         .frame(
                             width: max((segment.endFraction - segment.startFraction) * geometry.size.width, 2),
                             height: geometry.size.height
@@ -26,7 +26,7 @@ struct WorkDayPatternLineView: View {
 
                 Capsule()
                     .fill(StandUpTheme.timelineNow)
-                    .frame(width: 2, height: geometry.size.height + 2)
+                    .frame(width: 3, height: geometry.size.height + 4)
                     .offset(x: max((geometry.size.width * nowFraction) - 1, 0))
             }
         }

@@ -4,7 +4,11 @@ Minimal macOS menu bar app that tracks your coding streak and nudges you to stan
 
 Made by [Mike G](https://x.com/mikegyi).
 
-![Get Up Stand Up product screenshot](assets/get-up-stand-up-product.png)
+<img
+  src="assets/get-up-stand-up-product.png"
+  alt="Get Up Stand Up product screenshot"
+  width="420"
+/>
 
 ## What it does
 

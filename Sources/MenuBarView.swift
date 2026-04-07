@@ -22,7 +22,7 @@ struct MenuBarView: View {
                     .tint(StandUpTheme.green)
             }
 
-            WorkHeatmapView(
+            WorkTodayView(
                 snapshot: reminderEngine.workHistory,
                 formatDuration: reminderEngine.formattedWorkDuration
             )

@@ -19,7 +19,7 @@ final class WorkHistoryStoreTests: XCTestCase {
 
     func testItPersistsAcrossStoreReloads() {
         let (store, defaults) = makeStore()
-        let today = date(year: 2026, month: 4, day: 6)
+        let today = date(year: 2026, month: 4, day: 6, hour: 10, minute: 45)
 
         _ = store.recordActiveWork(seconds: 2_700, at: today)
 
@@ -28,6 +28,7 @@ final class WorkHistoryStoreTests: XCTestCase {
 
         XCTAssertEqual(snapshot.todaySeconds, 2_700, accuracy: 0.001)
         XCTAssertEqual(snapshot.currentStreakDays, 1)
+        XCTAssertEqual(snapshot.todayPatternSegments.count, 1)
     }
 
     func testCurrentStreakStopsAtTheFirstGap() {
@@ -43,6 +44,32 @@ final class WorkHistoryStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.longestStreakDays, 2)
     }
 
+    func testItBuildsMergedTodayPatternSegments() {
+        let (store, _) = makeStore()
+        let day = date(year: 2026, month: 4, day: 6)
+
+        _ = store.recordActiveWork(seconds: 600, at: date(year: 2026, month: 4, day: 6, hour: 9, minute: 10))
+        let snapshot = store.recordActiveWork(seconds: 600, at: date(year: 2026, month: 4, day: 6, hour: 9, minute: 20))
+
+        XCTAssertEqual(snapshot.todayPatternSegments.count, 1)
+        XCTAssertEqual(snapshot.todayPatternSegments[0].startFraction, (9 * 3_600) / 86_400, accuracy: 0.0001)
+        XCTAssertEqual(snapshot.todayPatternSegments[0].endFraction, ((9 * 3_600) + (20 * 60)) / 86_400, accuracy: 0.0001)
+        XCTAssertEqual(snapshot.todaySeconds, 1_200, accuracy: 0.001)
+        XCTAssertEqual(calendar.startOfDay(for: day), day)
+    }
+
+    func testItClampsTodayPatternAtStartOfDay() {
+        let (store, _) = makeStore()
+        let snapshot = store.recordActiveWork(
+            seconds: 600,
+            at: date(year: 2026, month: 4, day: 6, hour: 0, minute: 3)
+        )
+
+        XCTAssertEqual(snapshot.todayPatternSegments.count, 1)
+        XCTAssertEqual(snapshot.todayPatternSegments[0].startFraction, 0, accuracy: 0.0001)
+        XCTAssertEqual(snapshot.todayPatternSegments[0].endFraction, 180 / 86_400, accuracy: 0.0001)
+    }
+
     private func makeStore() -> (WorkHistoryStore, UserDefaults) {
         let suiteName = "WorkHistoryStoreTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -52,6 +79,10 @@ final class WorkHistoryStoreTests: XCTestCase {
 
     private func date(year: Int, month: Int, day: Int) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    private func date(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
     }
 
     private var calendar: Calendar {

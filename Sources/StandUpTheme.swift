@@ -5,6 +5,7 @@ enum StandUpTheme {
     static let gold = Color(red: 0.95, green: 0.76, blue: 0.16)
     static let red = Color(red: 0.77, green: 0.16, blue: 0.20)
     static let background = Color(red: 0.98, green: 0.96, blue: 0.90)
+    static let timelineTrack = Color(red: 0.88, green: 0.86, blue: 0.80)
     static let heatmapEmpty = Color(red: 0.89, green: 0.87, blue: 0.81)
     static let heatmapFuture = Color(red: 0.95, green: 0.94, blue: 0.90)
     static let heatmapLow = Color(red: 0.72, green: 0.85, blue: 0.68)

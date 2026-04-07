@@ -17,7 +17,7 @@ final class ReminderEngine: ObservableObject {
     private var timer: Timer?
     private var hasStarted = false
     private var tracker = SessionTracker()
-    private var lastWorkSampleAt: Date?
+    private var workTimeSampler = WorkTimeSampler()
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -60,7 +60,7 @@ final class ReminderEngine: ObservableObject {
     func pause() {
         isPaused = true
         sessionState = .paused
-        lastWorkSampleAt = nil
+        workTimeSampler = WorkTimeSampler()
     }
 
     func resume() {
@@ -73,7 +73,7 @@ final class ReminderEngine: ObservableObject {
         tracker.reset()
         elapsedSeconds = 0
         sessionState = isPaused ? .paused : .waitingForActivity
-        lastWorkSampleAt = nil
+        workTimeSampler = WorkTimeSampler()
     }
 
     func formattedElapsed() -> String {
@@ -151,7 +151,7 @@ final class ReminderEngine: ObservableObject {
     private func apply(_ snapshot: SessionSnapshot, at now: Date, shouldRecordWork: Bool) {
         elapsedSeconds = snapshot.elapsedSeconds
         sessionState = snapshot.state
-        refreshWorkHistory(at: now, state: snapshot.state, shouldRecordWork: shouldRecordWork)
+        refreshWorkHistory(at: now, snapshot: snapshot, shouldRecordWork: shouldRecordWork)
 
         guard snapshot.shouldNotify else {
             return
@@ -160,28 +160,21 @@ final class ReminderEngine: ObservableObject {
         notifier.sendStandUpReminder()
     }
 
-    private func refreshWorkHistory(at now: Date, state: SessionState, shouldRecordWork: Bool) {
-        guard state == .tracking || state == .timeToStand else {
-            lastWorkSampleAt = nil
+    private func refreshWorkHistory(
+        at now: Date,
+        snapshot: SessionSnapshot,
+        shouldRecordWork: Bool
+    ) {
+        guard let seconds = workTimeSampler.sample(
+            at: now,
+            sessionState: snapshot.state,
+            elapsedSeconds: snapshot.elapsedSeconds,
+            shouldRecordWork: shouldRecordWork
+        ) else {
             workHistory = workHistoryStore.snapshot(referenceDate: now)
             return
         }
 
-        guard shouldRecordWork else {
-            workHistory = workHistoryStore.snapshot(referenceDate: now)
-            return
-        }
-
-        defer {
-            lastWorkSampleAt = now
-        }
-
-        guard let lastWorkSampleAt else {
-            workHistory = workHistoryStore.snapshot(referenceDate: now)
-            return
-        }
-
-        let seconds = max(now.timeIntervalSince(lastWorkSampleAt), 0)
         workHistory = workHistoryStore.recordActiveWork(seconds: seconds, at: now)
     }
 
